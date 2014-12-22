@@ -31,7 +31,12 @@
     uploader = new FileUploader({
         "target": "#room_photo",
         "dragArea": "#drap_drop",
+        "trigger": "onSubmit"
     }, "im.php");
+        $("#property_photo_add").on("submit", function(e){
+            e.preventDefault();
+            uploader.submit(this);
+        });
     });
 </script>
 </body>

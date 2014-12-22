@@ -1,17 +1,24 @@
 /**
+* @project                              - JQuery AJAX Uploader
+* @purpose                              - Upload files to server, via JQuery Ajax.
+* @author                               - Oshane Bailey
+* @email                                - b4.oshany@gmail.com
+*
 * Represent a Drag and Drop interface for file uploader.
 * @class FileUploader
 * @property {int} rowCount              - num of bits.
 * @property {HTMLElement} dropper       - Drag and Drop container.
 * @property {string} formData           - form data.
 * @property {double} status             - percentage completed.
-* @property {string[]} response         - response from the server.
+* @property {XMLHttpResponse} response  - http response object from the server.
+* @property {string[]} responseData     - response data from the server.
 * @proeprty {string} url                - url of the server.
 */
 function FileUploader(options, url){
     this.rowCount = 0;
     this.status = null;
-    this.response = [];
+    this.responseData = [];
+    this.response = undefined;
     this.url = url;
     this.files = [];
     this.options = {
@@ -40,12 +47,9 @@ function FileUploader(options, url){
     }
     
     this.fileEventHandler = function(files){        
-        //We need to send dropped files to Server
-        console.log(files);
-        console.log(this.options);
+        //We need to send dropped files to Server.
         switch(this.options.trigger){
             case "onAttach":
-                console.log(files);
                 this.handleFileUpload(files);
                 break;
             case "onSubmit":
@@ -56,7 +60,9 @@ function FileUploader(options, url){
     
     this.submit = function(form){
         if(this.options.trigger = "onSubmit")
-            return this.handleFileUpload(this.files, form);
+            this.handleFileUpload(this.files, form);
+        if(this.response != undefined)
+            return this.response
     }
 
     this.init = function(options){
@@ -85,14 +91,26 @@ function FileUploader(options, url){
     this.handleFileUpload = function(files, form){
         var formData = new FormData();
         var status = new this.createStatusbar(this);
-        $.each(files, function(key, file){
-            formData.append("files", file);
-            status.setFileNameSize(file.name, file.size);
-        });
-        return this.sendFileToServer(this.url, formData, status);
+        if(files instanceof Array){
+            $.each(files, function(key, file){
+                uploader.handleFileUpload(file, form);
+            });
+        }else{
+            if(form != undefined){
+                $.each($(form)[0].elements, function(index, element){
+                    formData.append(element.name, element.value);
+                });
+            }
+            $.each(files, function(key, file){
+                formData.append("files", file);
+                status.setFileNameSize(file.name, file.size);
+            });
+            this.sendFileToServer(this.url, formData, status);
+        }
     }
 
     this.sendFileToServer = function(url, formData, status){
+        console.log(formData);
         var current_object = this;
         var uploadURL = url; //Upload URL
         var extraData ={}; //Extra Data.
@@ -121,12 +139,12 @@ function FileUploader(options, url){
             data: formData,
             success: function(data){
                 status.setProgress(100);
-                current_object.response.push(data);
+                current_object.responseData.push(data);
                 $("#status1").append("File upload Done<br>");
             }
         });
         status.setAbort(jqXHR);
-        return jqXHR;
+        this.response = jqXHR;
     }
 
     this.createStatusbar = function(obj){
