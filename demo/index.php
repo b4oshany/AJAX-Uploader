@@ -17,14 +17,13 @@
       <input type="file" name="files" id="room_photo">
     </div>
 <div class="footer">
-<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
 <button type="submit" form="property_photo_add" class="btn btn-primary" id="property_photo_submit" >Save changes</button>
 </div>
 </form>
 <div id="drag_drop" style="width: 200px; height: 20px; border: 1px solid black;"></div>
 <div id="dump"></div>
-<script src="jquery.js"></script>
-<script src="upload.js"></script>
+<script src="../jquery.js"></script>
+<script src="../jquery-uploader.js"></script>
 <script>
     var uploader = undefined;
     $(document).ready(function(){
@@ -35,7 +34,10 @@
     }, "im.php");
         $("#property_photo_add").on("submit", function(e){
             e.preventDefault();
-            uploader.submit(this);
+            uploader.submit(this)
+            .done(function(data){
+                $("#dump").html(data);
+            });
         });
     });
 </script>
