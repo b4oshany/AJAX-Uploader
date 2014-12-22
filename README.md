@@ -5,7 +5,7 @@ Description
 -----------
 Upload files to server using JQuery Ajax.
 
-Author of [Vecni]
+Author
 -------------------------
 [Oshane Bailey]
 
