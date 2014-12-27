@@ -5,20 +5,19 @@
 * @email                                - b4.oshany@gmail.com
 */
 $.fn.extend({
-    refresh: function(page, remote, fn){
+    swap: function(page, fn){
         $page = $(page);
         $target = $page.find(this.selector);
-        if(typeof(remote) == "function")
-            fn = remote;
-        else{
-            $.get(remote, function(data){
-                $($target).refresh(data, fn);
-            });
-        }
         if(fn != undefined)
-           fn($target, this, $page);
+           fn($target, $page);
         else{
-           this.html($target.html());
+           $(this).html($target.html());
         }
+    },
+    refresh: function(remote, fn){
+        $target = $(this);
+        $.get(remote, function(page){
+            $target.swap(page, fn);
+        });
     }
 });
