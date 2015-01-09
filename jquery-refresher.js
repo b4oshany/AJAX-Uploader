@@ -6,8 +6,8 @@
 */
 $.fn.extend({
     swap: function(page, fn){
-        $page = $(page);
-        $target = $page.find(this.selector);
+        var $page = $(page);
+        var $target = $page.find(this.selector);
         if(fn != undefined)
            fn($target, $page);
         else{
@@ -15,7 +15,13 @@ $.fn.extend({
         }
     },
     refresh: function(remote, fn){
-        $target = $(this);
+        var $target = $(this);
+        if(typeof remote === "function"){
+            remote = ".";
+            fn = remote;
+        }else if(remote == undefined){
+            remote = ".";
+        }
         $.get(remote, function(page){
             if(fn != undefined)
                 fn($target, page);
