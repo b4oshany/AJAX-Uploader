@@ -17,7 +17,10 @@ $.fn.extend({
     refresh: function(remote, fn){
         $target = $(this);
         $.get(remote, function(page){
-            $target.swap(page, fn);
+            if(fn != undefined)
+                fn($target, page);
+            else
+                $target.swap(page);
         });
     }
 });

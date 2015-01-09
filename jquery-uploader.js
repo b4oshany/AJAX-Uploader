@@ -21,6 +21,7 @@ function FileUploader(options, url){
     this.response = undefined;
     this.url = url;
     this.files = [];
+    this.targetName = "files";
     this.options = {
         "target": undefined,
         "dragArea": undefined,
@@ -75,6 +76,7 @@ function FileUploader(options, url){
         }
         if(options["target"] != undefined){
             $(options["target"]).on('change', function(e){
+                obj.targetName = $(e.delegateTarget).attr("name");
                 obj.handleTarget(e);
             });
         }
@@ -101,8 +103,9 @@ function FileUploader(options, url){
                     formData.append(element.name, element.value);
                 });
             }
+            var targetName = this.targetName;
             $.each(files, function(key, file){
-                formData.append("files", file);
+                formData.append(targetName, file);
                 status.setFileNameSize(file.name, file.size);
             });
             this.sendFileToServer(this.url, formData, status);
@@ -110,7 +113,6 @@ function FileUploader(options, url){
     }
 
     this.sendFileToServer = function(url, formData, status){
-        console.log(formData);
         var current_object = this;
         var uploadURL = url; //Upload URL
         var extraData ={}; //Extra Data.
