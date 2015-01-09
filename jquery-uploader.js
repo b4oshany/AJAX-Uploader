@@ -14,7 +14,7 @@
 * @property {string[]} responseData     - response data from the server.
 * @proeprty {string} url                - url of the server.
 */
-function FileUploader(options, url){
+function FileUploader(options, url, fn){
     this.rowCount = 0;
     this.status = null;
     this.responseData = [];
@@ -22,10 +22,12 @@ function FileUploader(options, url){
     this.url = url;
     this.files = [];
     this.targetName = "files";
+    this.fn = fn;
     this.options = {
         "target": undefined,
         "dragArea": undefined,
-        "trigger": "onAttach"
+        "trigger": "onAttach",
+        "showProgress": false
     };
 
     this.enable_drag_drop = function(){
@@ -67,22 +69,22 @@ function FileUploader(options, url){
     }
 
     this.init = function(options){
-        var dragArea = options["dragArea"];
+        $.extend(this.options, options);
+        var dragArea = this.options["dragArea"];
         var obj = this;
         if(dragArea != undefined){
             this.dropper = $(dragArea);
             if(this.dropper != undefined)
                 this.enable_drag_drop();
         }
-        if(options["target"] != undefined){
-            $(options["target"]).on('change', function(e){
+        if(this.options["target"] != undefined){
+            $(this.options["target"]).on('change', function(e){
                 obj.targetName = $(e.delegateTarget).attr("name");
                 obj.handleTarget(e);
             });
         }
         if(this.url == undefined)
             this.url = ".";
-        $.extend(this.options, options);
     }
 
     this.handleTarget = function(e){
@@ -92,7 +94,8 @@ function FileUploader(options, url){
 
     this.handleFileUpload = function(files, form){
         var formData = new FormData();
-        var status = new this.createStatusbar(this);
+        var showProgress = this.options.showProgress;
+        var status = (showProgress)? new this.createStatusbar(this) : undefined;
         if(files instanceof Array){
             $.each(files, function(key, file){
                 uploader.handleFileUpload(file, form);
@@ -105,8 +108,9 @@ function FileUploader(options, url){
             }
             var targetName = this.targetName;
             $.each(files, function(key, file){
-                formData.append(targetName, file);
-                status.setFileNameSize(file.name, file.size);
+                formData.append(targetName, file);                
+                if(showProgress)
+                    status.setFileNameSize(file.name, file.size);
             });
             this.sendFileToServer(this.url, formData, status);
         }
@@ -127,8 +131,10 @@ function FileUploader(options, url){
                             if (event.lengthComputable) {
                                 percent = Math.ceil(position / total * 100);
                             }
+                            
                             //Set progress
-                            status.setProgress(percent);
+                            if(current_object.options.showProgress)
+                                status.setProgress(percent);
                         }, false);
                     }
                 return xhrobj;
@@ -140,12 +146,16 @@ function FileUploader(options, url){
             cache: false,
             data: formData,
             success: function(data){
-                status.setProgress(100);
+                if(current_object.options.showProgress)
+                    status.setProgress(100);
+                if(typeof fn === "function")
+                    fn(data);
                 current_object.responseData.push(data);
                 $("#status1").append("File upload Done<br>");
             }
         });
-        status.setAbort(jqXHR);
+        if(this.options.showProgress)
+            status.setAbort(jqXHR);
         this.response = jqXHR;
     }
 
