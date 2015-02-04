@@ -21,6 +21,7 @@ function FileUploader(options, url){
     this.response = undefined;
     this.url = url;
     this.files = [];
+    this.name = "files";
     this.options = {
         "target": undefined,
         "dragArea": undefined,
@@ -74,9 +75,11 @@ function FileUploader(options, url){
                 this.enable_drag_drop();
         }
         if(options["target"] != undefined){
-            $(options["target"]).on('change', function(e){
+            var $target = $(options["target"]);
+            $target.on('change', function(e){
                 obj.handleTarget(e);
             });
+            this.name = $target.attr("name");
         }
         if(this.url == undefined)
             this.url = ".";
@@ -89,6 +92,7 @@ function FileUploader(options, url){
     }
 
     this.handleFileUpload = function(files, form){
+        var $this = this;
         var formData = new FormData();
         var status = new this.createStatusbar(this);
         if(files instanceof Array){
@@ -102,7 +106,7 @@ function FileUploader(options, url){
                 });
             }
             $.each(files, function(key, file){
-                formData.append("files", file);
+                formData.append($this.name, file);
                 status.setFileNameSize(file.name, file.size);
             });
             this.sendFileToServer(this.url, formData, status);
